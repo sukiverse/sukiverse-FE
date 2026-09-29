@@ -5,20 +5,37 @@ import AppHeader from '@/features/anime/components/AppHeader'
 import AnimeList from '@/features/anime/components/AnimeList'
 import GenreFilter from '@/features/anime/components/GenreFilter'
 import SortFilter from '@/features/anime/components/SortFilter'
-import { getAnimeList } from '@/lib/server/animeData'
-import type { Genre, OrderBy } from '@/types/api/anime'
+import type { Anime, Genre, OrderBy } from '@/types/api/anime'
 
 interface HomeProps {
   searchParams: Promise<{ genre?: string; orderBy?: string; aniName?: string }>
+}
+
+/* 외부 백엔드 서버에서 애니메이션 목록 조회 */
+async function fetchAnimeList(params: {
+  genres?: Genre[]
+  orderBy?: OrderBy
+  aniName?: string
+}): Promise<Anime[]> {
+  const query = new URLSearchParams()
+  params.genres?.forEach((g) => query.append('genre', g))
+  if (params.orderBy) query.set('orderBy', params.orderBy)
+  if (params.aniName) query.set('aniName', params.aniName)
+
+  const res = await fetch(`${process.env.API_BASE_URL}/api/v1/anime/jikan?${query}`, {
+    cache: 'no-store',
+  })
+  if (!res.ok) throw new Error('애니메이션 목록을 불러오지 못했습니다.')
+  return res.json()
 }
 
 export default async function Home({ searchParams }: HomeProps) {
   const { genre, orderBy = 'Popularity', aniName } = await searchParams
   const genres = genre ? (Array.isArray(genre) ? genre : [genre]) as Genre[] : undefined
 
-  let animes: Awaited<ReturnType<typeof getAnimeList>> = []
+  let animes: Anime[] = []
   try {
-    animes = getAnimeList({
+    animes = await fetchAnimeList({
       genres,
       orderBy: orderBy as OrderBy,
       aniName,
