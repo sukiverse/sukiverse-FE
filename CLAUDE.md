@@ -6,8 +6,9 @@
 
 ## 0. 프로젝트 개요
 
-- **프로젝트명**: sukiverse (好き + universe) — 애니메이션, J-POP, 성우 정보를 하나의 연결된 세계관처럼 제공하는 일본 문화 콘텐츠 종합 플랫폼
-- **주요 기능**: Animation · J-POP · 성우 정보 탐색, 도메인 간 cross 연결 (애니↔OST↔성우)
+- **프로젝트명**: sukiverse (好き + universe) — 애니메이션, J-POP 정보를 연결하여 제공하는 플랫폼
+- **주요 기능**: Animation · J-POP 정보 탐색, 도메인 간 cross 연결 (애니↔OST)
+- **FE 프로젝트**: 이 레포지토리는 sukiverse의 프론트엔드 개발을 담당합니다. API 명세 변경 등은 백엔드에서 관할합니다.
 
 ## 1. 코딩 전에 먼저 생각하기
 
@@ -76,41 +77,3 @@
 **이 지침이 잘 작동하고 있다면:** diff에 불필요한 변경이 줄고, 과도한 복잡성으로 인한 재작성이 줄며, 실수 후가 아닌 구현 전에 명확화 질문이 나옵니다.
 
 ---
-
-## 5. FE / BE 코드 분리 기준
-
-Next.js App Router 구조에서 프론트엔드와 백엔드 코드를 명확히 분리합니다.
-
-### FE 전용 경로 — 클라이언트 관련 코드만 작성
-
-| 경로                                | 설명                        |
-| ----------------------------------- | --------------------------- |
-| `src/app/(pages)/`                  | 페이지 컴포넌트 및 레이아웃 |
-| `src/components/`                   | 재사용 가능한 UI 컴포넌트   |
-| `src/features/{domain}/components/` | 도메인별 전용 컴포넌트      |
-| `src/features/{domain}/hooks/`      | 클라이언트 커스텀 훅        |
-| `src/features/{domain}/stores/`     | Zustand 스토어              |
-| `src/lib/client/`                   | 브라우저 전용 유틸리티      |
-
-### BE 전용 경로 — 서버에서만 실행되는 코드만 작성
-
-| 경로              | 설명                                      |
-| ----------------- | ----------------------------------------- |
-| `src/app/api/`    | Next.js Route Handlers (GET/POST 등)      |
-| `src/lib/server/` | 서버 전용 유틸리티                        |
-| `src/services/`   | 외부 API 클라이언트 (AniList, Spotify 등) |
-
-### 공유 경로 — FE/BE 모두 참조 가능
-
-| 경로               | 설명                    |
-| ------------------ | ----------------------- |
-| `src/types/api/`   | API 요청/응답 타입 정의 |
-| `src/lib/utils.ts` | 범용 유틸리티 (`cn` 등) |
-| `src/types/`       | 공통 TypeScript 타입    |
-
-### 경계 규칙
-
-- FE 코드는 `src/app/api/`, `src/lib/server/`, `src/services/`를 **절대 import하지 않습니다.**
-- BE 코드는 `src/components/`, `src/features/`, `src/lib/client/`를 **절대 import하지 않습니다.**
-- 서버 전용 파일 상단에는 `import 'server-only'`를 명시합니다.
-- 환경변수는 서버 전용(`process.env.SECRET`)과 클라이언트 공개(`NEXT_PUBLIC_`)를 구분합니다.
